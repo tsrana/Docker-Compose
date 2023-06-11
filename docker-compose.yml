@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  mysqldb:
+    container_name: mysqldb
+    image: mysql
+    environment:
+      MYSQL_USER: springuser
+      MYSQL_PASSWORD: ThePassword
+      MYSQL_DATABASE: db_example
+      MYSQL_ROOT_PASSWORD: root 
+    ports:
+      - 3303:3306
+    volumes:
+      - ./mysql-data:/var/lib/mysql    
+    networks:
+      springboot-mysql-net:
+
+  springboot-restful-webservices:
+    container_name: springboot-restful-webservices
+    build:
+      context: ./java-mysql
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      - mysqldb
+    environment:  
+      - spring.jpa.hibernate.ddl-auto=update
+      - spring.datasource.url=jdbc:mysql://mysqldb:3306/db_example
+      - spring.datasource.username=springuser
+      - spring.datasource.password=ThePassword
+      - spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+    networks:
+      springboot-mysql-net:
+    restart: on-failure
+
+networks:
+  springboot-mysql-net:
